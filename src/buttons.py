@@ -80,10 +80,13 @@ class ButtonsGrid(QGridLayout):
             # slot = self._makeSlot(self.display.clear,button)
             self._connectButtonCliked(button, self._clear)
             # button.clicked.connect(self.display.clear)
-
         if text in '+-/*':
             self._connectButtonCliked(button, 
                 self._makeSlot(self._operatorClicked, button))
+
+        if text in '=':
+            self._connectButtonCliked(button, self._eq)
+
 
 
     def _makeSlot(self, func, *args, **kwargs):
@@ -114,11 +117,34 @@ class ButtonsGrid(QGridLayout):
         displayText = self.display.text() # left
         self.display.clear()
 
-        if not isValidNumber(displayText) and self.left is None:
+        if not isValidNumber(displayText) and self._left is None:
             print('Não tem nada para colocar no valor da esquerda')
             return
         if self._left is None:
             self._left = float(displayText)
 
-        self.op = buttonText
-        self.equation = f'{self._left} {self.op} ??'
+        self._op = buttonText
+        self.equation = f'{self._left} {self._op} {self._right}'
+
+    def _eq(self):
+        displayText = self.display.text()
+
+        if not isValidNumber(displayText):
+            print('Sem nada para a direita')
+            return
+        
+        self._right = float(displayText)
+        self.equation = f'{self._left}{self._op}{self._right}'
+        # if self._right is None:
+        result = 0.0
+
+        try:
+            result = eval(self.equation)
+            print(result)
+        except ZeroDivisionError as e:
+            result= f'Erro de divisão {e}'
+        
+        self.display.clear()
+        self.info.setText(f'{self.equation} = {result}')
+        self._left = result
+        self._right = None

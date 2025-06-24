@@ -11,7 +11,7 @@ def isValidNumber(string: str):
         float(string)
         valid = True
     except ValueError:
-        print("Deu ruim")
+        # print("Deu ruim")
         valid = False
     return valid
 
