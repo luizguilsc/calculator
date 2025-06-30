@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QPushButton, QGridLayout
 from PySide6.QtCore import Slot
 from config.variables import MID_FONT_SIZE
 
-from utils.utils import isEmpty, isNumOrDot, isValidNumber
+from utils.utils import isEmpty, isNumOrDot, isValidNumber, converToNumber
 
 #Circular Import
 from typing import TYPE_CHECKING
@@ -38,7 +38,7 @@ class ButtonsGrid(QGridLayout):
             ['7', '8', '9', '*'],
             ['4', '5', '6', '-'],
             ['1', '2', '3', '+'],
-            ['',  '0', '.', '='],
+            ['N',  '0', '.', '='],
         ]
         self.display = display
         self.info = info
@@ -96,6 +96,9 @@ class ButtonsGrid(QGridLayout):
         if text == '◀':
             self._connectButtonCliked(button, self.display.backspace)
         
+        if text == 'N':
+            self._connectButtonCliked(button, self._invertNumber)
+
         if text in '+-/*^':
             self._connectButtonCliked(button, 
                 self._makeSlot(self._configLeftOp, text))
@@ -110,6 +113,17 @@ class ButtonsGrid(QGridLayout):
         def realSlot(_):
             func(*args, **kwargs)
         return realSlot
+
+    @Slot()
+    def _invertNumber(self):
+        displayText = self.display.text()
+
+        if not isValidNumber(displayText):
+            return
+
+        number = converToNumber(displayText) * -1
+
+        self.display.setText(str(number))
 
     @Slot()
     def _insertToDisplay(self, text):
@@ -137,7 +151,7 @@ class ButtonsGrid(QGridLayout):
             self._showError('Voce não digitou nada')
             return
         if self._left is None:
-            self._left = float(displayText)
+            self._left = converToNumber(displayText)
 
         self._op = text
         self.equation = f'{self._left} {self._op} {self._right}'
@@ -150,7 +164,7 @@ class ButtonsGrid(QGridLayout):
             self._showError('Conta imcompleta')
             return
         
-        self._right = float(displayText)
+        self._right = converToNumber(displayText)
         self.equation = f'{self._left}{self._op}{self._right}'
         # if self._right is None:
         result = 'error'
